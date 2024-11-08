@@ -9,6 +9,10 @@ djangorestframework = "*"
 django-cors-headers = "*"
 django-environ = "*"
 djangorestframework-simplejwt = "*"
+django-allauth = "*"
+requests = "*"
+cryptography = "*"
+google-auth = "*"
 
 [dev-packages]
 
