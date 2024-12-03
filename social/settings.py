@@ -11,8 +11,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 import sys
+import redis
+import json
 from datetime import timedelta
 from pathlib import Path
+
 
 from corsheaders.defaults import default_headers
 from environ import environ
@@ -39,10 +42,12 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = ["*"]
 
+redis_instance = redis.StrictRedis(host=env("REDIS_HOST"), port=env("REDIS_PORT"), db=3)
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -59,6 +64,10 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'rest_framework.authtoken',
+    'channels',
+    'redis',
+    'rest_framework_simplejwt',
+
 ]
 
 MIDDLEWARE = [
@@ -99,7 +108,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 WSGI_APPLICATION = 'social.wsgi.application'
-
+ASGI_APPLICATION = 'social.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -184,6 +193,14 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "core.customize.django_rest_framework.custom_exception_handler",
 }
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(env('REDIS_HOST', default='127.0.0.1'), env('REDIS_PORT', default='6379'))],
+        },
+    },
+}
 CORS_ORIGIN_WHITELIST = env("CORS_ORIGIN_WHITELIST").split(",")
 CORS_ALLOW_HEADERS = (
     *default_headers,
